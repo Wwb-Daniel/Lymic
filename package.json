@@ -25,7 +25,7 @@
   "name": "spotify-twitch-clone",
   "scripts": {
     "astro": "astro",
-    "build": "astro build",
+    "build": "astro build && node fix-runtime.js",
     "dev": "astro dev",
     "preview": "astro preview",
     "start": "astro dev"
@@ -33,6 +33,6 @@
   "type": "module",
   "version": "0.0.1",
   "engines": {
-    "node": ">=20.0.0"
+    "node": "20.x"
   }
 }
