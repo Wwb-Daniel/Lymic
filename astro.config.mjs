@@ -9,5 +9,12 @@ import vercel from "@astrojs/vercel/serverless";
 export default defineConfig({
   integrations: [tailwind(), svelte(), react()],
   output: 'server',
-  adapter: vercel()
+  adapter: vercel({
+    imageService: true
+  }),
+  image: {
+    service: {
+      entrypoint: 'astro/assets/services/sharp'
+    }
+  }
 });
