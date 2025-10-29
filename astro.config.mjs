@@ -3,7 +3,7 @@ import tailwind from "@astrojs/tailwind";
 import svelte from "@astrojs/svelte";
 import react from "@astrojs/react";
 
-import vercel from "@astrojs/vercel/serverless";
+import vercel from "@astrojs/vercel";
 
 // https://astro.build/config
 export default defineConfig({
