@@ -22,6 +22,9 @@
     "three": "^0.180.0",
     "zustand": "4.4.3"
   },
+    "devDependencies": {
+    "terser": "^5.31.0"
+  },
   "name": "spotify-twitch-clone",
   "scripts": {
     "astro": "astro",
