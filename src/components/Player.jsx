@@ -26,7 +26,12 @@ export function Player() {
   useEffect(() => {
     const {song, playlist} = currentMusic;
     if (song) {
-      audioRef.current.src = `/music/${playlist?.id}/0${song.id}.mp3`;
+      // Verificar si es una canción de Supabase (tiene audio_url) o local
+      if (song.audio_url) {
+        audioRef.current.src = song.audio_url;
+      } else {
+        audioRef.current.src = `/music/${playlist?.id}/0${song.id}.mp3`;
+      }
       play();
     }
   }, [currentMusic])
@@ -38,9 +43,17 @@ export function Player() {
   }
 
   function onNextSong() {
-    const nextSong = getNextSong();
-    if (nextSong) {
-      setCurrentMusic({...currentMusic, song: nextSong});
+    const { songs } = currentMusic;
+    if (songs && songs.length > 0) {
+      const currentIndex = songs.findIndex(s => s.id === currentMusic.song?.id);
+      const nextIndex = (currentIndex + 1) % songs.length;
+      const nextSong = songs[nextIndex];
+      setCurrentMusic({ ...currentMusic, song: nextSong });
+    } else {
+      const nextSong = getNextSong();
+      if (nextSong) {
+        setCurrentMusic({...currentMusic, song: nextSong});
+      }
     }
   }
 

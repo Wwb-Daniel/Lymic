@@ -1,0 +1,12 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import SearchComponent from "@/components/SearchComponent";
+---
+
+<Layout title="Buscar - Spotify Clone">
+  <div class="min-h-screen relative">
+    <div class="relative z-10">
+      <SearchComponent client:load />
+    </div>
+  </div>
+</Layout>

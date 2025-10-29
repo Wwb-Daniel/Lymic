@@ -1,0 +1,15 @@
+---
+import HyperspeedBg from "@/components/Hyperspeed";
+import { hyperspeedPresets } from "@/components/hyperspeedPresets";
+---
+
+<div style="position:fixed; inset:0; background:#050a1a;">
+  <HyperspeedBg client:only="react" effectOptions={hyperspeedPresets.two} />
+</div>
+
+<div style="position:fixed; top:12px; left:12px; right:12px; display:flex; justify-content:space-between; align-items:center; color:white; font-family:system-ui, sans-serif;">
+  <a href="/" style="color:white; text-decoration:none; opacity:0.8">← Volver</a>
+  <div style="opacity:0.8;">Mantén click o toca para acelerar</div>
+</div>
+
+

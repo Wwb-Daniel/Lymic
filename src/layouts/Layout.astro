@@ -1,6 +1,11 @@
 ---
-import { Player } from "@/components/Player"
-import AsideMenu from "../components/AsideMenu.astro"
+import ModernPlayer from "@/components/ModernPlayer"
+import Library from "@/components/Library"
+import NowPlaying from "@/components/NowPlaying"
+import TopBar from "@/components/TopBar"
+import Hyperspeed from "@/components/Hyperspeed"
+import { hyperspeedPresets } from "@/components/hyperspeedPresets"
+import BackgroundColorBends from "@/components/BackgroundColorBends"
 import { ViewTransitions } from "astro:transitions"
 
 interface Props {
@@ -22,37 +27,138 @@ const { title } = Astro.props
     <ViewTransitions fallback="none" />
   </head>
   <body>
-    <div id="app" class="relative h-screen p-2 gap-2">
+    <!-- Fondo animado Hyperspeed -->
+    <div id="colorbends-bg" class="fixed inset-0 w-full h-full">
+      <Hyperspeed client:only="react" effectOptions={hyperspeedPresets.two} />
+    </div>
+
+    <div id="app" class="relative h-screen p-2 gap-2 z-10 transition-all duration-300">
       <aside class="[grid-area:aside] flex-col flex overflow-y-auto">
-        <AsideMenu />
+        <Library client:load />
       </aside>
 
       <main
-        class="[grid-area:main] rounded-lg bg-zinc-900 overflow-y-auto w-full"
+        id="main-content"
+        class="[grid-area:main] rounded-lg bg-zinc-900/20 backdrop-blur-md overflow-y-auto w-full relative transition-all duration-300"
       >
+        <TopBar client:load />
         <slot />
       </main>
 
       <footer class="[grid-area:player] h-[80px]">
-        <Player client:load transition:name="media-player" transition:persist />
+        <ModernPlayer client:only="react" />
       </footer>
     </div>
+    
+    <!-- Now Playing Panel -->
+    <NowPlaying client:only="react" />
+    
+    <!-- Portal para modales -->
+    <div id="modal-root"></div>
     <style>
       #app {
         display: grid;
         grid-template-areas:
           "aside main"
           "player player";
-        grid-template-columns: 350px 1fr;
+        grid-template-columns: auto 1fr;
         grid-template-rows: 1fr auto;
       }
     </style>
 
     <style is:global>
       html {
-        font-family: "CircularStd", system-ui, sans-serif;
-        background: #010101;
-        color: white;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      body {
+        font-family: "CircularStd", system-ui, sans-serif !important;
+        background: transparent !important;
+        color: white !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      #colorbends-bg {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 0 !important;
+        pointer-events: none !important;
+      }
+
+      #colorbends-bg > * {
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Asegurar que los modales siempre estén al frente */
+      #modal-root {
+        position: relative;
+        z-index: 9999;
+      }
+
+      /* Prevenir scroll cuando el modal está abierto */
+      body.modal-open {
+        overflow: hidden;
+      }
+
+      /* Estilos para scrollbar transparente y moderna */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+      }
+
+      *::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+      }
+
+      *::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      *::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        border: 3px solid transparent;
+        background-clip: padding-box;
+      }
+
+      *::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border: 3px solid transparent;
+        background-clip: padding-box;
+      }
+
+      /* Ajustar overflow de contenedores principales */
+      #app {
+        overflow: hidden;
+      }
+
+      #main-content {
+        overflow-y: auto;
+        overflow-x: hidden;
+        max-width: 100%;
+      }
+
+      /* Prevenir que el texto se salga de los contenedores */
+      * {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+
+      /* Asegurar que las imágenes no se salgan */
+      img {
+        max-width: 100%;
+        height: auto;
       }
 
       @font-face {
