@@ -98,7 +98,7 @@ export default function LoginForm() {
           href="/signup"
           className="block w-full py-3 border border-gray-600 hover:border-white text-white font-bold rounded-full transition-colors"
         >
-          Registrarse en Spotify
+          Registrarse en Lymic
         </a>
       </div>
     </form>
