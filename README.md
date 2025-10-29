@@ -1,6 +1,8 @@
-# 🎵 Spotify Clone - Plataforma Musical Completa
+# 🎵 Lymic - Plataforma Musical Moderna
 
-Una aplicación web moderna de streaming de música con funcionalidades avanzadas, construida con Astro, React, Supabase y TailwindCSS.
+Una aplicación web de streaming de música con funcionalidades avanzadas, inspirada en Spotify y construida desde cero con Astro, React, Supabase y TailwindCSS.
+
+**Creado por: Victor De Jesus**
 
 ## ✨ Características Principales
 
@@ -60,8 +62,8 @@ Una aplicación web moderna de streaming de música con funcionalidades avanzada
 ### 1. Clonar el repositorio
 
 ```bash
-git clone <tu-repositorio>
-cd spotify-twitch-clone
+git clone https://github.com/Wwb-Daniel/Lymic.git
+cd Lymic
 ```
 
 ### 2. Instalar dependencias
@@ -131,7 +133,7 @@ Visita `http://localhost:4321` en tu navegador.
 ## 📁 Estructura del Proyecto
 
 ```
-spotify-twitch-clone/
+Lymic/
 ├── src/
 │   ├── components/          # Componentes React y Astro
 │   │   ├── AuthModal.tsx    # Modal de login/registro
@@ -285,6 +287,12 @@ Las contribuciones son bienvenidas. Por favor:
 ## 📄 Licencia
 
 Este proyecto está bajo la licencia MIT.
+
+## 👨‍💻 Autor
+
+**Victor De Jesus**
+- GitHub: [@Wwb-Daniel](https://github.com/Wwb-Daniel)
+- Proyecto: Lymic - Plataforma de música inspirada en Spotify
 
 ---
 
