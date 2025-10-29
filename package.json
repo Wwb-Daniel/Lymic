@@ -31,5 +31,8 @@
     "start": "astro dev"
   },
   "type": "module",
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=20.0.0"
+  }
 }
