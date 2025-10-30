@@ -141,9 +141,9 @@ export default function NowPlaying() {
 
   return (
     <aside
-      className=`h-full backdrop-blur-xl border-l border-white/20 transition-all duration-300 z-40 overflow-hidden ${
+      className=`{h-full backdrop-blur-xl border-l border-white/20 transition-all duration-300 z-40 overflow-hidden ${
         isExpanded ? 'w-[420px]' : 'w-[280px]'
-      }`
+      `}`
     >
       {/* Fondo con gradiente transparente y luces neón animadas */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50 pointer-events-none" />
@@ -321,7 +321,8 @@ export default function NowPlaying() {
             </button>
             <button
               onClick={toggleFavorite}
-              className={`p-2 hover:bg-white/5 rounded-full transition-colors ${
+              144
+            `p-2 hover:bg-white/5 rounded-full transition-colors ${
                 isFavorite ? 'text-green-500' : 'text-gray-400'
               }`}
               aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
