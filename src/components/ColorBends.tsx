@@ -1,4 +1,7 @@
-import { useEffect, useRef } from 'react';
+101
+  import { useEffect, useRef } from 'react';
+import { usePlayerStore } from '../store/playerStore';
+
 import * as THREE from 'three';
 
 const MAX_COLORS = 8;
@@ -79,8 +82,9 @@ void main() {
     if (uNoise > 0.0001) {
       float n = fract(sin(dot(gl_FragCoord.xy + vec2(uTime), vec2(12.9898, 78.233))) * 43758.5453123);
       col += (n - 0.5) * uNoise;
-      col = clamp(col, 0.0, 1.0);
-    }
+export default function
+
+}
 
     vec3 rgb = (uTransparent > 0) ? col * a : col;
     gl_FragColor = vec4(rgb, a);
@@ -95,7 +99,9 @@ void main() {
 }
 `;
 
-export default function ColorBends({
+85
+  101
+    ({
   className,
   style,
   rotation = 45,
@@ -110,6 +116,7 @@ export default function ColorBends({
   parallax = 0.5,
   noise = 0.1
 }) {
+     const isPlaying = usePlayerStore(state => state.isPlaying);
   const containerRef = useRef(null);
   const rendererRef = useRef(null);
   const rafRef = useRef(null);
@@ -163,7 +170,7 @@ export default function ColorBends({
     rendererRef.current = renderer;
     // Three r152+ uses outputColorSpace and SRGBColorSpace
     renderer.outputColorSpace = THREE.SRGBColorSpace;
- renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1,15));    renderer.setClearColor(0x000000, transparent ? 0 : 1);
+ renderer.setPixelRatio(isPlaying ? 0.7 : Math.min(window.devicePixelRatio || 1, 15))1);
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
     renderer.domElement.style.display = 'block';
@@ -269,6 +276,25 @@ export default function ColorBends({
     colors,
     transparent
   ]);
+
+     // Optimize animation performance when music is playing
+ useEffect(() => {
+   const material = materialRef.current;
+   if (!material) return;
+
+   if (isPlaying) {
+     // Reduce visual effects intensity when music is playing
+     material.uniforms.uWarpStrength.value = warpStrength * 0.8;
+     material.uniforms.uFrequency.value = frequency * 0.9;
+     material.uniforms.uNoise.value = noise * 0.6;
+   } else {
+     // Restore full intensity when music stops
+     material.uniforms.uWarpStrength.value = warpStrength;
+     material.uniforms.uFrequency.value = frequency;
+     material.uniforms.uNoise.value = noise;
+   }
+ }, [isPlaying, warpStrength, frequency, noise]);
+    
 
   useEffect(() => {
     const material = materialRef.current;
