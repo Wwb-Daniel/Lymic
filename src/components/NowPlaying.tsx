@@ -321,9 +321,9 @@ className={`h-full backdrop-blur-xl border-l border-white/20 transition-all dura
             </button>
             <button
               onClick={toggleFavorite}
-            `p-2 hover:bg-white/5 rounded-full transition-colors ${
+            className={`p-2 hover:bg-white/5 rounded-full transition-colors ${
                 isFavorite ? 'text-green-500' : 'text-gray-400'
-              }`}
+`              }`}
               aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
             >
               <Heart 
