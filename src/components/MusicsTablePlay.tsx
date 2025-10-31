@@ -31,6 +31,7 @@ export const MusicsTablePlay = ({song, isCurrentSong}: Props) => {
     currentMusic,
     isPlaying,
     setIsPlaying,
+     setShowNowPlaying,
     setCurrentMusic
   } = usePlayerStore(state => state)
 
@@ -55,8 +56,10 @@ export const MusicsTablePlay = ({song, isCurrentSong}: Props) => {
     // the playlist is the same, but the song is different
     if (currentMusic.song?.id !== song.id) {
       setCurrentMusic({songs: currentMusic.songs, playlist: currentMusic.playlist, song: song})
+       setShowNowPlaying(true)
     }
     setIsPlaying(true)
+     setShowNowPlaying(true)
   }
 
 
