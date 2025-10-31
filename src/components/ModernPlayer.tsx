@@ -32,7 +32,7 @@ export default function ModernPlayer() {
     // Verificar si es una canción de Supabase (tiene audio_url) o local
     if ('audio_url' in song && song.audio_url) {
       audioRef.current.src = song.audio_url;
-    } else if ('id' in song) {
+    } else if ('id' in song && currentMusic.playlist?.id) {
       audioRef.current.src = `/music/${currentMusic.playlist?.id}/0${song.id}.mp3`;
     }
 
