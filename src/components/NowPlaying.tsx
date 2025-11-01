@@ -16,26 +16,22 @@ export default function NowPlaying() {
   const [toastMessage, setToastMessage] = useState('');
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Ajustar el margen del contenido principal cuando el panel esté abierto
+  // Actualizar atributos del app para controlar el grid
   useEffect(() => {
     const app = document.getElementById('app');
-    const mainContent = document.getElementById('main-content');
-    
-    if (showNowPlaying && app && mainContent) {
-      const panelWidth = isExpanded ? '420px' : '355px';
-      app.style.marginRight = panelWidth;
-      mainContent.style.marginRight = '0';
-    } else if (app && mainContent) {
-      app.style.marginRight = '0';
-      mainContent.style.marginRight = '0';
-    }
+    if (!app) return;
 
-    return () => {
-      if (app && mainContent) {
-        app.style.marginRight = '0';
-        mainContent.style.marginRight = '0';
+    if (showNowPlaying) {
+      app.setAttribute('data-nowplaying-open', 'true');
+      if (isExpanded) {
+        app.setAttribute('data-nowplaying-expanded', 'true');
+      } else {
+        app.removeAttribute('data-nowplaying-expanded');
       }
-    };
+    } else {
+      app.removeAttribute('data-nowplaying-open');
+      app.removeAttribute('data-nowplaying-expanded');
+    }
   }, [showNowPlaying, isExpanded]);
 
   // Cargar video cuando cambia la canción
@@ -151,6 +147,19 @@ export default function NowPlaying() {
     window.location.href = `/artist/${song.artist}`;
   };
 
+  // Hook para detectar tamaño de pantalla
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   if (!currentMusic?.song || !showNowPlaying) return null;
 
   const { song } = currentMusic;
@@ -167,13 +176,37 @@ export default function NowPlaying() {
     showNowPlaying
   });
 
+  // En móvil, mostrar como overlay
+  if (isMobile) {
+    return (
+      <div 
+        className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+        onClick={() => setShowNowPlaying(false)}
+      >
+        <aside
+          className="fixed right-0 top-0 h-full backdrop-blur-xl border-l border-white/20 transition-all duration-300 overflow-hidden w-[85vw] max-w-[420px]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {renderContent()}
+        </aside>
+      </div>
+    );
+  }
+
+  // En desktop, parte del grid
   return (
     <aside
-      className={`fixed right-0 top-0 h-full backdrop-blur-xl border-l border-white/20 transition-all duration-300 z-40 overflow-hidden ${
-        isExpanded ? 'w-[420px]' : 'w-[280px]'
-      }`}
-      style={{ display: showNowPlaying ? 'block' : 'none' }}
+      className={`[grid-area:nowplaying] h-full backdrop-blur-xl border-l border-white/20 transition-all duration-300 overflow-hidden ${
+        isExpanded ? 'w-[420px]' : 'w-[355px]'
+      } ${showNowPlaying ? 'block' : 'hidden'}`}
     >
+      {renderContent()}
+    </aside>
+  );
+
+  function renderContent() {
+    return (
+      <>
 
         {/* Fondo con gradiente transparente y luces neón animadas */}      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50 pointer-events-none" />
       
@@ -287,11 +320,20 @@ export default function NowPlaying() {
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="p-2 hover:bg-white/5 rounded-full transition-colors"
-            aria-label="Expandir vista"
+            aria-label={isExpanded ? 'Contraer vista' : 'Expandir vista'}
+            title={isExpanded ? 'Contraer' : 'Expandir'}
           >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M6.53 9.47a.75.75 0 0 1 0 1.06l-2.72 2.72h1.018a.75.75 0 0 1 0 1.5H1.25v-3.579a.75.75 0 0 1 1.5 0v1.018l2.72-2.72a.75.75 0 0 1 1.06 0zm2.94-2.94a.75.75 0 0 1 0-1.06l2.72-2.72h-1.018a.75.75 0 1 1 0-1.5h3.578v3.579a.75.75 0 0 1-1.5 0V3.81l-2.72 2.72a.75.75 0 0 1-1.06 0" />
-            </svg>
+            {isExpanded ? (
+              // Icono de contraer
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M3.646 3.646a.5.5 0 0 1 .708 0L6 5.293V4.5a.5.5 0 0 1 1 0V7H4.5a.5.5 0 0 1 0-1H5.293L3.646 4.354a.5.5 0 0 1 0-.708zM12.354 12.354a.5.5 0 0 1-.708 0L10 10.707V11.5a.5.5 0 0 1-1 0V9h2.5a.5.5 0 0 1 0 1H10.707l1.647 1.646a.5.5 0 0 1 0 .708z"/>
+              </svg>
+            ) : (
+              // Icono de expandir
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M6.53 9.47a.75.75 0 0 1 0 1.06l-2.72 2.72h1.018a.75.75 0 0 1 0 1.5H1.25v-3.579a.75.75 0 0 1 1.5 0v1.018l-2.72-2.72a.75.75 0 0 1 1.06 0zm2.94-2.94a.75.75 0 0 1 0-1.06l2.72-2.72h-1.018a.75.75 0 1 1 0-1.5h3.578v3.579a.75.75 0 0 1-1.5 0V3.81l-2.72 2.72a.75.75 0 0 1-1.06 0" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
@@ -359,59 +401,52 @@ export default function NowPlaying() {
               <h1 className="text-3xl font-bold text-white mb-2 drop-shadow-lg">
                 {song.title}
               </h1>
-              <p className="text-lg text-white/90 drop-shadow-md">
+              <p className="text-lg text-white/90 drop-shadow-md mb-4">
                 {song.artist}
               </p>
+              {/* Estadísticas - Views y Likes */}
+              <div className="flex items-center gap-4 text-sm text-white/80 mb-2">
+                <span className="flex items-center gap-1">
+                  <Eye className="w-4 h-4" />
+                  {song.views ? song.views.toLocaleString() : '0'} vistas
+                </span>
+                <span className="flex items-center gap-1">
+                  <Heart className="w-4 h-4" fill="currentColor" />
+                  {song.likes ? song.likes.toLocaleString() : '0'} likes
+                </span>
+              </div>
+              {/* Acciones: Compartir / Like */}
+              <div className="flex items-center gap-3 pointer-events-auto">
+                <button
+                  onClick={handleShare}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                  aria-label="Compartir"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3" />
+                  </svg>
+                </button>
+                <button
+                  onClick={toggleFavorite}
+                  className={`p-2 hover:bg-white/10 rounded-full transition-colors ${
+                    isFavorite ? 'text-green-500' : 'text-white/80'
+                  }`}
+                  aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                >
+                  <Heart 
+                    className="w-5 h-5" 
+                    fill={isFavorite ? 'currentColor' : 'none'}
+                    stroke={isFavorite ? 'none' : 'currentColor'}
+                  />
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Información adicional de la canción */}
         <div className="relative p-6 bg-gradient-to-b from-black/20 to-transparent backdrop-blur-sm">
-          {/* Botones de acción */}
-          <div className="flex items-center gap-4 mb-6">
-            <button
-              onClick={handleShare}
-              className="p-2 hover:bg-white/5 rounded-full transition-colors"
-              aria-label="Compartir"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3" />
-              </svg>
-            </button>
-            <button
-              onClick={toggleFavorite}
-           className={`p-2 hover:bg-white/5 rounded-full transition-colors ${
-  isFavorite ? 'text-green-500' : 'text-gray-400'
-}`}
-
-              aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-            >
-              <Heart 
-                className="w-5 h-5" 
-                fill={isFavorite ? 'currentColor' : 'none'}
-                stroke={isFavorite ? 'none' : 'currentColor'}
-              />
-            </button>
-          </div>
-
-          {/* Estadísticas */}
-          {(song.views > 0 || song.likes > 0) && (
-            <div className="flex items-center gap-4 text-sm text-gray-400 mb-6">
-              {song.views > 0 && (
-                <span className="flex items-center gap-1">
-                  <Eye className="w-4 h-4" />
-                  {song.views.toLocaleString()} vistas
-                </span>
-              )}
-              {song.likes > 0 && (
-                <span className="flex items-center gap-1">
-                  <Heart className="w-4 h-4" fill="currentColor" />
-                  {song.likes.toLocaleString()} likes
-                </span>
-              )}
-            </div>
-          )}
+          {/* Botones de acción (movidos arriba en el overlay) */}
 
           {/* Letra (si existe) */}
           {song.lyrics && (
@@ -430,13 +465,13 @@ export default function NowPlaying() {
         <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
           <div className="bg-green-500 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
-</svg>
-<span className="font-medium">{toastMessage}</span>
-
+              <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+            </svg>
+            <span className="font-medium">{toastMessage}</span>
           </div>
         </div>
       )}
-    </aside>
-  );
+      </>
+    );
+  }
 }
