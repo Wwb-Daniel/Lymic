@@ -85,7 +85,12 @@ export async function uploadFile(
 ) {
   const { data, error } = await supabase.storage
     .from(bucket)
-    .upload(path, file, options);
+    .upload(path, file, {
+      cacheControl: options?.cacheControl ?? '3600',
+      upsert: options?.upsert ?? false,
+      // Establecer el MIME correcto para evitar errores de decodificación en el navegador
+      contentType: (file as any)?.type || undefined,
+    });
   
   if (error) throw error;
   return data;

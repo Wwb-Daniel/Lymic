@@ -38,19 +38,38 @@ export default function NowPlaying() {
     };
   }, [showNowPlaying, isExpanded]);
 
+  // Cargar video cuando cambia la canción
+  useEffect(() => {
+    const song = currentMusic?.song;
+    if (!videoRef.current || !song || !isSupabaseSong(song)) return;
+
+    if (song.video_url) {
+      console.log('🎬 Loading video:', song.video_url);
+      videoRef.current.src = song.video_url;
+      videoRef.current.load();
+      videoRef.current.currentTime = 0;
+    } else {
+      // Limpiar video si no hay video_url
+      videoRef.current.src = '';
+      videoRef.current.load();
+    }
+  }, [currentMusic?.song?.id]);
+
   // Sincronizar video con estado de reproducción
   useEffect(() => {
     const song = currentMusic?.song;
     if (!videoRef.current || !song || !isSupabaseSong(song) || !song.video_url) return;
 
     if (isPlaying) {
-      videoRef.current.play().catch(console.error);
+      videoRef.current.play().catch(err => {
+        console.error('❌ Error playing video:', err);
+      });
     } else {
       videoRef.current.pause();
     }
   }, [isPlaying, currentMusic?.song]);
 
-  // Detener video cuando cambia la canción
+  // Resetear video cuando cambia la canción
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.currentTime = 0;
@@ -139,12 +158,22 @@ export default function NowPlaying() {
   // Solo mostrar para canciones de Supabase
   if (!isSupabaseSong(song)) return null;
 
+  // Debug: verificar qué se va a mostrar
+  console.log('🎬 NowPlaying render:', {
+    hasVideo: !!song.video_url,
+    hasCover: !!song.cover_url,
+    video_url: song.video_url,
+    isPlaying,
+    showNowPlaying
+  });
+
   return (
     <aside
-className={`h-full backdrop-blur-xl border-l border-white/20 transition-all duration-300 z-40 overflow-hidden ${
-          isExpanded ? 'w-[420px]' : 'w-[280px]'
-        }`}
-      >
+      className={`fixed right-0 top-0 h-full backdrop-blur-xl border-l border-white/20 transition-all duration-300 z-40 overflow-hidden ${
+        isExpanded ? 'w-[420px]' : 'w-[280px]'
+      }`}
+      style={{ display: showNowPlaying ? 'block' : 'none' }}
+    >
 
         {/* Fondo con gradiente transparente y luces neón animadas */}      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50 pointer-events-none" />
       
@@ -271,14 +300,45 @@ className={`h-full backdrop-blur-xl border-l border-white/20 transition-all dura
       <div className="overflow-y-auto overflow-x-hidden h-[calc(100vh-80px)]">
         {/* Cover / Video Canvas con overlay de título y artista */}
         <div className="relative h-[70vh] w-full bg-zinc-800 overflow-hidden">
-          {song.video_url ? (
+          {song.video_url && song.video_url.trim() !== '' ? (
             <video
               ref={videoRef}
               src={song.video_url}
               loop
               muted
               playsInline
+              autoPlay={isPlaying}
+              preload="auto"
               className="w-full h-full object-cover"
+              style={{ display: 'block' }}
+              onError={(e) => {
+                console.error('❌ Video error:', e);
+                const video = e.currentTarget as HTMLVideoElement;
+                console.error('Video error details:', { 
+                  src: video.src, 
+                  error: video.error,
+                  networkState: video.networkState,
+                  readyState: video.readyState
+                });
+              }}
+              onLoadedData={() => {
+                console.log('🎬 Video loaded data, readyState:', videoRef.current?.readyState);
+                if (isPlaying && videoRef.current) {
+                  videoRef.current.play().catch(err => {
+                    console.error('❌ Error playing video after load:', err);
+                  });
+                }
+              }}
+              onCanPlay={() => {
+                console.log('🎬 Video can play');
+                if (isPlaying && videoRef.current) {
+                  videoRef.current.play().catch(err => {
+                    console.error('❌ Error playing video on canplay:', err);
+                  });
+                }
+              }}
+              onPlay={() => console.log('🎬 Video started playing')}
+              onPause={() => console.log('🎬 Video paused')}
             />
           ) : song.cover_url ? (
             <img

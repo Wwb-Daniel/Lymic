@@ -27,7 +27,8 @@ export default function SearchComponent(){
     setLoading(true);
     setShowResults(true);
     try{
- let query_obj = supabase.from('songs_with_details').select('id,title,artist,cover_url,views,likes,audio_url').limit(SEARCH_LIMIT);      if(q) query_obj = query_obj.or(`title.ilike.%${q}%,artist.ilike.%${q}%`);
+      let query_obj = supabase.from('songs_with_details').select('id,title,artist,cover_url,audio_url,video_url,views,likes,duration,album').limit(SEARCH_LIMIT);
+      if(q) query_obj = query_obj.or(`title.ilike.%${q}%,artist.ilike.%${q}%`);
       if(cat) query_obj = query_obj.eq('category_id',cat);
       const {data} = await query_obj;
       setSongs(data || []);

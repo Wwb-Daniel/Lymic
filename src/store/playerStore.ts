@@ -54,7 +54,7 @@ export const usePlayerStore = create<PlayerStore>()(
       
       setVolume: (volume) => set({ volume }),
       setIsPlaying: (isPlaying) => set({ isPlaying }),
-      setCurrentMusic: (currentMusic) => set({ currentMusic, isPlaying: true }),
+      setCurrentMusic: (currentMusic) => set({ currentMusic, isPlaying: true, showNowPlaying: true, currentTime: 0 }),
       setShowNowPlaying: (show) => set({ showNowPlaying: show }),
       setCurrentTime: (time) => set({ currentTime: time }),
   

@@ -20,8 +20,8 @@ export default function HomeContent() {
   const loadContent = useCallback(async () => {
     try {
       const [trendingRes, recentRes, catsRes] = await Promise.all([
-        supabase.from('songs_with_details').select('id,title,artist,cover_url,views,likes').order('views',{ascending:false}).limit(SONGS_LIMIT),
-        supabase.from('songs_with_details').select('id,title,artist,cover_url,views,likes').order('created_at',{ascending:false}).limit(SONGS_LIMIT),
+        supabase.from('songs_with_details').select('id,title,artist,cover_url,audio_url,video_url,views,likes,duration,album').order('views',{ascending:false}).limit(SONGS_LIMIT),
+        supabase.from('songs_with_details').select('id,title,artist,cover_url,audio_url,video_url,views,likes,duration,album').order('created_at',{ascending:false}).limit(SONGS_LIMIT),
         supabase.from('categories').select('*').order('name').limit(CATEGORIES_LIMIT)
       ]);
 

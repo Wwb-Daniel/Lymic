@@ -23,22 +23,66 @@ export default function ModernPlayer() {
   const [isSeeking, setIsSeeking] = useState(false);
   const [previousVolume, setPreviousVolume] = useState(0.5);
   const [hasRestoredTime, setHasRestoredTime] = useState(false);
+  const [didBlobFallback, setDidBlobFallback] = useState(false);
 
   // Cargar audio cuando cambia la canción
   useEffect(() => {
     const song = currentMusic?.song;
     if (!audioRef.current || !song) return;
 
+    console.log('🎵 Loading song:', song);
+    console.log('🎵 Has audio_url?', 'audio_url' in song, song.audio_url);
+    console.log('🎵 isPlaying:', isPlaying);
+
     // Verificar si es una canción de Supabase (tiene audio_url) o local
     if ('audio_url' in song && song.audio_url) {
+      console.log('✅ Using Supabase audio_url:', song.audio_url);
       audioRef.current.src = song.audio_url;
-    } else if ('id' in song && currentMusic.playlist?.id) {
-      audioRef.current.src = `/music/${currentMusic.playlist?.id}/0${song.id}.mp3`;
+    } else if ('id' in song) {
+      const localPath = `/music/${currentMusic.playlist?.id}/0${song.id}.mp3`;
+      console.log('📁 Using local path:', localPath);
+      audioRef.current.src = localPath;
+    } else {
+      console.error('❌ No audio source available for song:', song);
+      return;
     }
 
+    audioRef.current.muted = false;
+    audioRef.current.defaultMuted = false;
+    audioRef.current.volume = volume;
+    // Hint type to some browsers
+    try { audioRef.current.setAttribute('type', 'audio/mpeg'); } catch {}
+    
+    const handleLoadedData = () => {
+      console.log('🎵 Audio loaded, attempting to play');
+      if (isPlaying) {
+        audioRef.current?.play().catch(err => {
+          console.error('❌ Error playing audio:', err);
+        });
+      }
+    };
+
+    const handleCanPlay = () => {
+      console.log('🎵 Audio can play');
+      if (isPlaying && audioRef.current) {
+        audioRef.current.play().catch(err => {
+          console.error('❌ Error playing audio on canplay:', err);
+        });
+      }
+    };
+
+    audioRef.current.addEventListener('loadeddata', handleLoadedData);
+    audioRef.current.addEventListener('canplay', handleCanPlay);
+    
     audioRef.current.load();
     setHasRestoredTime(false);
-  }, [currentMusic?.song]);
+    setDidBlobFallback(false);
+
+    return () => {
+      audioRef.current?.removeEventListener('loadeddata', handleLoadedData);
+      audioRef.current?.removeEventListener('canplay', handleCanPlay);
+    };
+  }, [currentMusic?.song, isPlaying, volume]);
 
   // Restaurar tiempo guardado cuando el audio esté listo
   useEffect(() => {
@@ -221,8 +265,52 @@ export default function ModernPlayer() {
 
   return (
     <footer className="h-[80px] bg-black/30 backdrop-blur-md border-t border-white/10 px-4">
+      {/* Manejo avanzado de errores del audio */}
+      {/* Retenta con ?download=1 para Supabase si falla la primera carga */}
+      
+      
       <audio
         ref={audioRef}
+        preload="auto"
+        onError={(e) => {
+          const audio = e.currentTarget as HTMLAudioElement;
+          const err = audio.error;
+          const code = err ? err.code : undefined;
+          console.error('Audio error', { src: audio.src, code, error: err });
+          // Retry strategy for Supabase public URLs
+          try {
+            const url = new URL(audio.src);
+            if (url.hostname.includes('supabase.co') && !url.searchParams.has('download')) {
+              url.searchParams.set('download', '1');
+              console.warn('Retrying audio with download=1:', url.toString());
+              audio.src = url.toString();
+              audio.load();
+              if (isPlaying) {
+                audio.play().catch(console.error);
+              }
+              return;
+            }
+            // Blob fallback for decode errors
+            if (code === 3 && url.hostname.includes('supabase.co') && !didBlobFallback) {
+              console.warn('Falling back to blob URL for audio decode error');
+              setDidBlobFallback(true);
+              fetch(audio.src, { mode: 'cors' })
+                .then(async (res) => {
+                  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                  const blob = await res.blob();
+                  const objectUrl = URL.createObjectURL(blob);
+                  audio.src = objectUrl;
+                  audio.load();
+                  if (isPlaying) {
+                    audio.play().catch(console.error);
+                  }
+                })
+                .catch((e3) => console.error('Blob fallback failed', e3));
+            }
+          } catch (e2) {
+            console.error('Error while retrying audio load', e2);
+          }
+        }}
         onEnded={handleEnded}
       />
 
