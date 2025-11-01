@@ -30,6 +30,17 @@ export default function ModernPlayer() {
     const song = currentMusic?.song;
     if (!audioRef.current || !song) return;
 
+    // Verificar si es la misma canción (mismo ID y misma URL)
+    const isSameSong = audioRef.current.src && 
+      ((song.audio_url && audioRef.current.src.includes(song.audio_url)) ||
+       (song.id && audioRef.current.src.includes(song.id.toString())));
+
+    // Si es la misma canción, no recargar el audio
+    if (isSameSong) {
+      console.log('🎵 Same song, not reloading audio');
+      return;
+    }
+
     console.log('🎵 Loading song:', song);
     console.log('🎵 Has audio_url?', 'audio_url' in song, song.audio_url);
     console.log('🎵 isPlaying:', isPlaying);
@@ -55,6 +66,11 @@ export default function ModernPlayer() {
     
     const handleLoadedData = () => {
       console.log('🎵 Audio loaded, attempting to play');
+      // Restaurar tiempo guardado si existe
+      if (savedTime > 0 && !hasRestoredTime) {
+        audioRef.current!.currentTime = savedTime;
+        setHasRestoredTime(true);
+      }
       if (isPlaying) {
         audioRef.current?.play().catch(err => {
           console.error('❌ Error playing audio:', err);
@@ -64,6 +80,11 @@ export default function ModernPlayer() {
 
     const handleCanPlay = () => {
       console.log('🎵 Audio can play');
+      // Restaurar tiempo guardado si existe
+      if (savedTime > 0 && !hasRestoredTime) {
+        audioRef.current!.currentTime = savedTime;
+        setHasRestoredTime(true);
+      }
       if (isPlaying && audioRef.current) {
         audioRef.current.play().catch(err => {
           console.error('❌ Error playing audio on canplay:', err);
@@ -82,7 +103,7 @@ export default function ModernPlayer() {
       audioRef.current?.removeEventListener('loadeddata', handleLoadedData);
       audioRef.current?.removeEventListener('canplay', handleCanPlay);
     };
-  }, [currentMusic?.song, isPlaying, volume]);
+  }, [currentMusic?.song?.id, isPlaying, volume, savedTime, hasRestoredTime]);
 
   // Restaurar tiempo guardado cuando el audio esté listo
   useEffect(() => {
@@ -107,13 +128,23 @@ export default function ModernPlayer() {
     };
   }, [currentMusic?.song, savedTime, isPlaying, hasRestoredTime]);
 
-  // Controlar play/pause
+  // Controlar play/pause y guardar tiempo actual
   useEffect(() => {
     if (!audioRef.current || !currentMusic?.song) return;
 
     if (isPlaying) {
+      // Solo restaurar tiempo si es significativamente diferente (más de 1 segundo)
+      // Esto evita saltos innecesarios al cambiar entre play/pause rápidamente
+      if (savedTime > 0 && Math.abs(audioRef.current.currentTime - savedTime) > 1) {
+        audioRef.current.currentTime = savedTime;
+      }
       audioRef.current.play().catch(console.error);
     } else {
+      // Guardar tiempo actual cuando se pausa
+      const currentTime = audioRef.current.currentTime;
+      if (currentTime > 0 && !isNaN(currentTime)) {
+        setSavedTime(currentTime);
+      }
       audioRef.current.pause();
     }
   }, [isPlaying]);
@@ -130,13 +161,22 @@ export default function ModernPlayer() {
     const audio = audioRef.current;
     if (!audio || !currentMusic?.song) return;
 
-    const updateTime = () => {
-      if (!isSeeking) {
-        const time = audio.currentTime;
-        setCurrentTime(time);
-        // Guardar el tiempo en el store cada segundo
-        if (Math.floor(time) % 1 === 0) {
-          setSavedTime(time);
+    // Guardar tiempo cuando se pausa
+    const handlePause = () => {
+      if (audio.currentTime > 0) {
+        setSavedTime(audio.currentTime);
+      }
+    };
+
+    // Guardar tiempo cuando se detiene
+    const handleTimeUpdate = () => {
+      if (!isSeeking && audio.currentTime > 0) {
+        setCurrentTime(audio.currentTime);
+        // Guardar periódicamente (cada segundo aproximadamente)
+        const currentSeconds = Math.floor(audio.currentTime);
+        const savedSeconds = Math.floor(savedTime);
+        if (currentSeconds !== savedSeconds) {
+          setSavedTime(audio.currentTime);
         }
       }
     };
@@ -152,7 +192,8 @@ export default function ModernPlayer() {
       }
     };
 
-    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('pause', handlePause);
     audio.addEventListener('loadedmetadata', updateDuration);
     audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('durationchange', updateDuration);
@@ -163,12 +204,13 @@ export default function ModernPlayer() {
     }
 
     return () => {
-      audio.removeEventListener('timeupdate', updateTime);
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('loadedmetadata', updateDuration);
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('durationchange', updateDuration);
     };
-  }, [isSeeking, currentMusic?.song]);
+  }, [isSeeking, currentMusic?.song, savedTime]);
 
   // Siguiente canción automática
   const handleEnded = () => {
