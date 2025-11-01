@@ -1,5 +1,4 @@
-101
-  import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePlayerStore } from '../store/playerStore';
 
 import * as THREE from 'three';
@@ -82,9 +81,7 @@ void main() {
     if (uNoise > 0.0001) {
       float n = fract(sin(dot(gl_FragCoord.xy + vec2(uTime), vec2(12.9898, 78.233))) * 43758.5453123);
       col += (n - 0.5) * uNoise;
-export default function
-
-}
+    }
 
     vec3 rgb = (uTransparent > 0) ? col * a : col;
     gl_FragColor = vec4(rgb, a);
@@ -99,9 +96,7 @@ void main() {
 }
 `;
 
-85
-  101
-    ({
+export default function ColorBends({
   className,
   style,
   rotation = 45,
@@ -170,7 +165,7 @@ void main() {
     rendererRef.current = renderer;
     // Three r152+ uses outputColorSpace and SRGBColorSpace
     renderer.outputColorSpace = THREE.SRGBColorSpace;
- renderer.setPixelRatio(isPlaying ? 0.7 : Math.min(window.devicePixelRatio || 1, 15))1);
+    renderer.setPixelRatio(isPlaying ? 0.7 : Math.min(window.devicePixelRatio || 1, 1));
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
     renderer.domElement.style.display = 'block';

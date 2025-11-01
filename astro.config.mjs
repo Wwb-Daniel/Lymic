@@ -47,9 +47,6 @@ export default defineConfig({
         }
       }
     },
-    server: {
-      middlewareMode: true,
-    },
     ssr: {
       external: ['sharp']
     }

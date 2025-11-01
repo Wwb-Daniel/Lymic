@@ -48,59 +48,64 @@ const { title } = Astro.props
       <footer class="[grid-area:player] h-[80px]">
         <ModernPlayer client:only="react" />
       </footer>
+      
+      <!-- Now Playing Panel - Parte del grid -->
+      <NowPlaying client:only="react" />
     </div>
-    
-    <!-- Now Playing Panel -->
-    <NowPlaying client:only="react" />
     
     <!-- Portal para modales -->
     <div id="modal-root"></div>
     <style>
+      /* Mobile first - sin sidebar, sin now playing */
       #app {
         display: grid;
         grid-template-areas:
-          "aside main"
-          "player player";
-        grid-template-columns: auto 1fr;
+          "main"
+          "player";
+        grid-template-columns: 1fr;
         grid-template-rows: 1fr auto;
-      }#app {
-    display: grid;
-    grid-template-areas:
-      "aside"
-      "main"
-      "player";
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
-    gap: 0.5rem;
-    height: 100vh;
-    overflow: hidden;
-  }
+        gap: 0.5rem;
+        height: 100vh;
+        overflow: hidden;
+      }
 
-  /* Tablet breakpoint (768px and up) */
-  @media (min-width: 768px) {
-    #app {
-      grid-template-areas:
-        "aside main"
-        "player player";
-      grid-template-columns: auto 1fr;
-      grid-template-rows: 1fr auto;
-      gap: 0.5rem;
-    }
-  }
+      /* Tablet breakpoint (768px and up) - con sidebar */
+      @media (min-width: 768px) {
+        #app {
+          grid-template-areas:
+            "aside main"
+            "player player";
+          grid-template-columns: auto 1fr;
+          grid-template-rows: 1fr auto;
+        }
+      }
 
-  /* Desktop breakpoint (1024px and up) */
-  @media (min-width: 1024px) {
-    #app {
-      gap: 0.5rem;
-    }
-  }
+      /* Desktop breakpoint (1024px and up) - con sidebar y espacio para now playing */
+      @media (min-width: 1024px) {
+        #app {
+          grid-template-areas:
+            "aside main nowplaying"
+            "player player player";
+          grid-template-columns: auto 1fr 0fr;
+          transition: grid-template-columns 0.3s ease;
+        }
+        
+        /* Cuando nowplaying está abierto, darle espacio */
+        #app[data-nowplaying-open="true"] {
+          grid-template-columns: auto 1fr 355px;
+        }
+        
+        #app[data-nowplaying-expanded="true"] {
+          grid-template-columns: auto 1fr 420px;
+        }
+      }
 
-  /* Large screens (1440px and up) */
-  @media (min-width: 1440px) {
-    #app {
-      gap: 0.75rem;
-    }
-  }
+      /* Large screens (1440px and up) */
+      @media (min-width: 1440px) {
+        #app {
+          gap: 0.75rem;
+        }
+      }
     </style>
 
     <style is:global>
@@ -147,32 +152,14 @@ const { title } = Astro.props
         overflow: hidden;
       }
 
-      /* Estilos para scrollbar transparente y moderna */
+      /* Ocultar scrollbar pero mantener funcionalidad de scroll */
       * {
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE y Edge */
       }
 
       *::-webkit-scrollbar {
-        width: 12px;
-        height: 12px;
-      }
-
-      *::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      *::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 6px;
-        border: 3px solid transparent;
-        background-clip: padding-box;
-      }
-
-      *::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.3);
-        border: 3px solid transparent;
-        background-clip: padding-box;
+        display: none; /* Chrome, Safari, Opera */
       }
 
       /* Ajustar overflow de contenedores principales */

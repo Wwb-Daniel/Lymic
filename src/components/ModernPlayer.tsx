@@ -356,30 +356,35 @@ export default function ModernPlayer() {
         onEnded={handleEnded}
       />
 
-      <div className="h-full flex items-center justify-between gap-4">
+      <div className="h-full flex items-center justify-between gap-2 sm:gap-4">
         {/* Información de la canción - Izquierda */}
-        <div className="flex items-center gap-3 min-w-[180px] w-[30%]">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 sm:min-w-[180px] w-full sm:w-[30%] flex-1">
           {/* Cover */}
-          <div className="w-14 h-14 rounded overflow-hidden bg-zinc-800 flex-shrink-0">
+          <div className="w-10 h-10 sm:w-14 sm:h-14 rounded overflow-hidden bg-zinc-800 flex-shrink-0">
             {songCover ? (
               <img src={songCover} alt={songTitle} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <Music className="w-6 h-6 text-gray-600" />
+                <Music className="w-4 h-4 sm:w-6 sm:h-6 text-gray-600" />
               </div>
             )}
           </div>
-
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-white truncate">{songTitle}</div>
-            <div className="text-xs text-gray-400 truncate">{songArtist}</div>
+          
+          {/* Info móvil - solo título */}
+          <div className="flex-1 min-w-0 sm:hidden">
+            <div className="text-xs font-medium text-white truncate">{songTitle}</div>
           </div>
 
-          {/* Like button */}
+          {/* Info Desktop */}
+          <div className="flex-1 min-w-0 hidden sm:block">
+            <div className="text-xs sm:text-sm font-medium text-white truncate">{songTitle}</div>
+            <div className="text-[10px] sm:text-xs text-gray-400 truncate">{songArtist}</div>
+          </div>
+
+          {/* Like button - oculto en móvil muy pequeño */}
           <button 
             onClick={toggleFavorite}
-            className={`p-2 transition-colors ${isFavorite ? 'text-green-500' : 'text-gray-400 hover:text-green-500'}`}
+            className={`hidden sm:block p-2 transition-colors ${isFavorite ? 'text-green-500' : 'text-gray-400 hover:text-green-500'}`}
             title={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
           >
             <Heart 
@@ -389,8 +394,22 @@ export default function ModernPlayer() {
           </button>
         </div>
 
-        {/* Controles - Centro */}
-        <div className="flex flex-col items-center gap-2 flex-1 max-w-[722px]">
+        {/* Controles móviles - Solo play/pause */}
+        <div className="flex sm:hidden items-center justify-center flex-1">
+          <button
+            onClick={handlePlayPause}
+            className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:scale-105 transition-transform"
+          >
+            {isPlaying ? (
+              <Pause className="w-5 h-5 text-black" />
+            ) : (
+              <Play className="w-5 h-5 text-black ml-0.5" />
+            )}
+          </button>
+        </div>
+
+        {/* Controles - Centro (Desktop) */}
+        <div className="hidden sm:flex flex-col items-center gap-2 flex-1 max-w-[722px]">
           {/* Botones de control */}
           <div className="flex items-center gap-4">
             {/* Shuffle */}
@@ -458,7 +477,7 @@ export default function ModernPlayer() {
         </div>
 
         {/* Controles adicionales - Derecha */}
-        <div className="flex items-center gap-2 min-w-[180px] w-[30%] justify-end">
+        <div className="flex items-center gap-1 sm:gap-2 min-w-0 sm:min-w-[180px] w-auto sm:w-[30%] justify-end">
           {/* Now Playing */}
           <button
             onClick={() => setShowNowPlaying(!showNowPlaying)}

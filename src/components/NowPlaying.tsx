@@ -148,16 +148,23 @@ export default function NowPlaying() {
   };
 
   // Hook para detectar tamaño de pantalla
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(max-width: 1023px)').matches;
+    }
+    return false;
+  });
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
+    const media = window.matchMedia('(max-width: 1023px)');
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    // Safari/older support
+    if (media.addEventListener) media.addEventListener('change', handler);
+    else media.addListener(handler);
+    return () => {
+      if (media.removeEventListener) media.removeEventListener('change', handler);
+      else media.removeListener(handler);
     };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   if (!currentMusic?.song || !showNowPlaying) return null;
